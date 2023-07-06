@@ -2,14 +2,18 @@ import re
 import pandas as pd
 
 def preprocess(data):
-    pattern = '\d{1,2}/\d{1,2}/\d{2,4},\s\d{1,2}:\d{2}\s-\s'
+    pattern = r'(\d{1,2}/\d{1,2}/\d{2,4}),\s(\d{1,2}:\d{2})\s-\s'
 
-    messages = re.split(pattern, data)[1:]
-    dates = re.findall(pattern, data)
+    matches = re.findall(pattern, data)
+
+    dates = []
+    messages = []
+    for match in matches:
+        dates.append(match[0] + ", " + match[1])
+        messages.append(data.split(match[0] + ", " + match[1] + " - ")[1].split("\n", 1)[1])
 
     df = pd.DataFrame({'user_message': messages, 'message_date': dates})
-    # convert message_date type
-    df['message_date'] = pd.to_datetime(df['message_date'], format='%d/%m/%Y, %H:%M - ')
+    df['message_date'] = pd.to_datetime(df['message_date'], format='%d/%m/%y, %H:%M')
 
     df.rename(columns={'message_date': 'date'}, inplace=True)
 
